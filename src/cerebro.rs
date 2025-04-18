@@ -26,22 +26,6 @@ impl fmt::Display for Origin {
     }
 }
 
-#[derive(Debug, Deserialize, JsonSchema, Clone, Copy)]
-#[serde(rename_all = "lowercase")]
-pub enum Bool {
-    True,
-    False,
-}
-
-impl fmt::Display for Bool {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Bool::True => write!(f, "true"),
-            Bool::False => write!(f, "false"),
-        }
-    }
-}
-
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, JsonSchema)]
 #[schemars(description = "Parameters for filtering cards from the Cerebro API.")]
@@ -51,8 +35,8 @@ pub struct CardsRequest {
     )]
     pub origin: Option<Origin>,
 
-    #[schemars(description = "Filter incomplete cards ('true' or 'false').")]
-    pub incomplete: Option<Bool>,
+    #[schemars(description = "Filter incomplete cards.")]
+    pub incomplete: Option<bool>,
 
     #[schemars(description = "Filter by card author ID.")]
     pub author: Option<String>,
@@ -70,7 +54,7 @@ pub struct CardsRequest {
 
     #[serde(rename = "excludeCampaign")]
     #[schemars(description = "If present (e.g., 'true'), exclude campaign cards.")]
-    pub exclude_campaign: Option<Bool>,
+    pub exclude_campaign: Option<bool>,
 
     #[schemars(description = "Filter by card name (partial match).")]
     pub name: Option<String>,
