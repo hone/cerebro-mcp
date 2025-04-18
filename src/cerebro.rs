@@ -180,6 +180,7 @@ impl Cerebro {
     }
 }
 
+#[tool(tool_box)]
 impl ServerHandler for Cerebro {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
