@@ -41,7 +41,9 @@ pub struct CardsRequest {
     #[schemars(description = "Filter by card author ID.")]
     pub author: Option<String>,
 
-    #[schemars(description = "Filter by boost icon value (e.g., '1', '2', 'star').")]
+    #[schemars(
+        description = "Filter by boost icon value (e.g., '{b}' or '{s}'. For more than one boost icon, append them one after another: '{b}{b}'. If there is a '{s}', it always comes first.)."
+    )]
     pub boost: Option<String>,
 
     #[schemars(
@@ -49,7 +51,7 @@ pub struct CardsRequest {
     )]
     pub classification: Option<String>,
 
-    #[schemars(description = "Filter by card cost (e.g., '0', '1', 'X').")]
+    #[schemars(description = "Filter by card cost (e.g., '-', '0', '1', 'X').")]
     pub cost: Option<String>,
 
     #[serde(rename = "excludeCampaign")]
@@ -60,7 +62,7 @@ pub struct CardsRequest {
     pub name: Option<String>,
 
     #[schemars(
-        description = "Filter by printed resource ('{{Physical}}', '{{Mental}}', '{{Energy}}', '{{Wild}}', or 'none'). To filter by more than one resource, just append them (i.e. {{Energy}}{{Physical}}). Note: API uses lowercase."
+        description = "Filter by printed resource ('{p}' for Phyical, '{m}' for Mental, '{e}' for Energy, '{w}' for Wild, or 'none'). To filter by more than one resource, just append them (i.e. {{Energy}}{{Physical}}). Note: API uses lowercase."
     )]
     pub resource: Option<String>,
 
