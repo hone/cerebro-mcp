@@ -70,7 +70,7 @@ pub struct CardsRequest {
     pub text: Option<String>,
 
     #[schemars(
-        description = "Filter by traits (comma-separated list, e.g., 'avenger,shield'). All specified traits must be present. Note: API uses lowercase."
+        description = "Filter by traits (comma-separated list, e.g., 'Avenger,S.H.I.E.L.D.'). All specified traits must be present."
     )]
     pub traits: Option<String>,
 
