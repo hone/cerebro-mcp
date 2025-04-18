@@ -169,6 +169,8 @@ impl Cerebro {
             }
         }
 
+        tracing::info!("URL: {url}");
+
         self.client
             .get(url)
             .send()
