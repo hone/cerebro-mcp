@@ -122,6 +122,7 @@ dependencies = [
  "rmcp",
  "schemars",
  "serde",
+ "serde_urlencoded",
  "tokio",
  "tracing",
  "tracing-subscriber",

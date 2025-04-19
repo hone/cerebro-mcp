@@ -5,10 +5,10 @@ use rmcp::{
     tool,
 };
 use schemars::JsonSchema;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
-#[derive(Debug, Deserialize, JsonSchema, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, JsonSchema, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum Origin {
     All,
@@ -27,7 +27,7 @@ impl fmt::Display for Origin {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Deserialize, JsonSchema)]
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 #[schemars(description = "Parameters for filtering cards from the Cerebro API.")]
 pub struct CardsRequest {
     #[schemars(
@@ -102,72 +102,9 @@ impl Cerebro {
     }
 
     #[tool(description = "Fetch a list of Marvel Champions card data")]
-    pub async fn cards(
-        &self,
-        #[tool(aggr)] CardsRequest {
-            origin,
-            incomplete,
-            author,
-            boost,
-            classification,
-            cost,
-            exclude_campaign,
-            name,
-            resource,
-            text,
-            traits,
-            type_,
-            pack,
-            set,
-        }: CardsRequest,
-    ) -> String {
+    pub async fn cards(&self, #[tool(aggr)] request: CardsRequest) -> String {
         let mut url = Url::parse("https://cerebro-beta-bot.herokuapp.com/cards").unwrap();
-        {
-            let mut query_pairs = url.query_pairs_mut();
-
-            if let Some(origin) = origin {
-                query_pairs.append_pair("origin", origin.to_string().as_str());
-            }
-            if let Some(incomplete) = incomplete {
-                query_pairs.append_pair("incomplete", incomplete.to_string().as_str());
-            }
-            if let Some(author) = author {
-                query_pairs.append_pair("author", author.to_string().as_str());
-            }
-            if let Some(boost) = boost {
-                query_pairs.append_pair("boost", boost.to_string().as_str());
-            }
-            if let Some(classification) = classification {
-                query_pairs.append_pair("classification", classification.to_string().as_str());
-            }
-            if let Some(cost) = cost {
-                query_pairs.append_pair("cost", cost.to_string().as_str());
-            }
-            if let Some(exclude_campaign) = exclude_campaign {
-                query_pairs.append_pair("excludeCampaign", exclude_campaign.to_string().as_str());
-            }
-            if let Some(name) = name {
-                query_pairs.append_pair("name", name.to_string().as_str());
-            }
-            if let Some(resource) = resource {
-                query_pairs.append_pair("resource", resource.to_string().as_str());
-            }
-            if let Some(text) = text {
-                query_pairs.append_pair("text", text.to_string().as_str());
-            }
-            if let Some(traits) = traits {
-                query_pairs.append_pair("traits", traits.to_string().as_str());
-            }
-            if let Some(type_) = type_ {
-                query_pairs.append_pair("type", type_.to_string().as_str());
-            }
-            if let Some(pack) = pack {
-                query_pairs.append_pair("pack", pack.to_string().as_str());
-            }
-            if let Some(set) = set {
-                query_pairs.append_pair("set", set.to_string().as_str());
-            }
-        }
+        url.set_query(Some(serde_urlencoded::to_string(request).unwrap().as_str()));
 
         tracing::info!("URL: {url}");
 
