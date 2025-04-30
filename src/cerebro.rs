@@ -1,7 +1,7 @@
 use reqwest::{Client, Url};
 use rmcp::{
     ServerHandler,
-    model::{ServerCapabilities, ServerInfo},
+    model::{CallToolResult, Content, ErrorData, ServerCapabilities, ServerInfo},
     tool,
 };
 use schemars::JsonSchema;
@@ -106,21 +106,31 @@ impl Cerebro {
     }
 
     #[tool(description = "Fetch a list of Marvel Champions card data")]
-    pub async fn get_cards(&self, #[tool(aggr)] request: CardsRequest) -> String {
+    pub async fn get_cards(
+        &self,
+        #[tool(aggr)] request: CardsRequest,
+    ) -> Result<CallToolResult, rmcp::Error> {
         let mut url = self.base_url.clone();
         url.set_path("cards");
-        url.set_query(Some(serde_urlencoded::to_string(request).unwrap().as_str()));
+
+        let query = serde_urlencoded::to_string(request).map_err(|e| {
+            ErrorData::internal_error(format!("Failed to serialize request: {}", e), None)
+        })?;
+
+        url.set_query(Some(&query));
 
         tracing::info!("URL: {url}");
 
-        self.client
-            .get(url)
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap()
+        let response =
+            self.client.get(url).send().await.map_err(|e| {
+                ErrorData::internal_error(format!("HTTP request failed: {}", e), None)
+            })?;
+
+        let text = response.text().await.map_err(|e| {
+            ErrorData::internal_error(format!("Failed to read response body: {}", e), None)
+        })?;
+
+        Ok(CallToolResult::success(vec![Content::text(text)]))
     }
 
     #[tool(description = "Fetch a list of Marvel Champions pack data")]
