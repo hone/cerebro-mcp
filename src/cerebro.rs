@@ -8,6 +8,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+const BASE_URL: &str = "https://cerebro-beta-bot.herokuapp.com/";
+
 #[derive(Debug, Serialize, Deserialize, JsonSchema, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum Origin {
@@ -47,7 +49,7 @@ pub struct CardsRequest {
     pub boost: Option<String>,
 
     #[schemars(
-        description = "Filter by classification ('player' or 'encounter'). Note: API uses lowercase."
+        description = "Filter by classification ('encounter', 'basic', 'protection', '). This is sometimes called \"aspect\". Note: API uses lowercase."
     )]
     pub classification: Option<String>,
 
@@ -91,6 +93,7 @@ pub struct CardsRequest {
 #[derive(Clone)]
 pub struct Cerebro {
     client: Client,
+    base_url: Url,
 }
 
 #[tool(tool_box)]
@@ -98,15 +101,32 @@ impl Cerebro {
     pub fn new() -> Cerebro {
         Cerebro {
             client: Client::new(),
+            base_url: Url::parse(BASE_URL).unwrap(),
         }
     }
 
     #[tool(description = "Fetch a list of Marvel Champions card data")]
-    pub async fn cards(&self, #[tool(aggr)] request: CardsRequest) -> String {
-        let mut url = Url::parse("https://cerebro-beta-bot.herokuapp.com/cards").unwrap();
+    pub async fn get_cards(&self, #[tool(aggr)] request: CardsRequest) -> String {
+        let mut url = self.base_url.clone();
+        url.set_path("cards");
         url.set_query(Some(serde_urlencoded::to_string(request).unwrap().as_str()));
 
         tracing::info!("URL: {url}");
+
+        self.client
+            .get(url)
+            .send()
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap()
+    }
+
+    #[tool(description = "Fetch a list of Marvel Champions pack data")]
+    pub async fn get_packs(&self) -> String {
+        let mut url = self.base_url.clone();
+        url.set_path("packs");
 
         self.client
             .get(url)
