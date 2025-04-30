@@ -134,18 +134,20 @@ impl Cerebro {
     }
 
     #[tool(description = "Fetch a list of Marvel Champions pack data")]
-    pub async fn get_packs(&self) -> String {
+    pub async fn get_packs(&self) -> Result<CallToolResult, rmcp::Error> {
         let mut url = self.base_url.clone();
         url.set_path("packs");
 
-        self.client
-            .get(url)
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap()
+        let response =
+            self.client.get(url).send().await.map_err(|e| {
+                ErrorData::internal_error(format!("HTTP request failed: {}", e), None)
+            })?;
+
+        let text = response.text().await.map_err(|e| {
+            ErrorData::internal_error(format!("Failed to read response body: {}", e), None)
+        })?;
+
+        Ok(CallToolResult::success(vec![Content::text(text)]))
     }
 }
 
