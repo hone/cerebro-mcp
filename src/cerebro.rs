@@ -9,6 +9,7 @@ use std::fmt;
 
 mod cards;
 mod packs;
+mod sets;
 
 const BASE_URL: &str = "https://cerebro-beta-bot.herokuapp.com/";
 
@@ -81,6 +82,34 @@ impl Cerebro {
     ) -> Result<CallToolResult, rmcp::Error> {
         let mut url = self.base_url.clone();
         url.set_path("packs");
+
+        let query = serde_urlencoded::to_string(params).map_err(|e| {
+            ErrorData::internal_error(format!("Failed to serialize request: {}", e), None)
+        })?;
+
+        url.set_query(Some(&query));
+
+        tracing::info!("URL: {url}");
+
+        let response =
+            self.client.get(url).send().await.map_err(|e| {
+                ErrorData::internal_error(format!("HTTP request failed: {}", e), None)
+            })?;
+
+        let text = response.text().await.map_err(|e| {
+            ErrorData::internal_error(format!("Failed to read response body: {}", e), None)
+        })?;
+
+        Ok(CallToolResult::success(vec![Content::text(text)]))
+    }
+
+    #[tool(description = "Fetch a list of Marvel Champions set data")]
+    pub async fn get_sets(
+        &self,
+        #[tool(aggr)] params: sets::Request,
+    ) -> Result<CallToolResult, rmcp::Error> {
+        let mut url = self.base_url.clone();
+        url.set_path("sets");
 
         let query = serde_urlencoded::to_string(params).map_err(|e| {
             ErrorData::internal_error(format!("Failed to serialize request: {}", e), None)
