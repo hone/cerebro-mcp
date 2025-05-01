@@ -1,15 +1,12 @@
 use reqwest::{Client, Url};
-use rmcp::{
-    model::{CallToolResult, Content, ErrorData, ServerCapabilities, ServerInfo},
-    tool, ServerHandler,
-};
+use rmcp::model::ErrorData;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-mod cards;
-mod packs;
-mod sets;
+pub mod cards;
+pub mod packs;
+pub mod sets;
 
 const BASE_URL: &str = "https://cerebro-beta-bot.herokuapp.com/";
 
@@ -38,7 +35,6 @@ pub struct Cerebro {
     base_url: Url,
 }
 
-#[tool(tool_box)]
 impl Cerebro {
     pub fn new() -> Cerebro {
         Cerebro {
@@ -47,11 +43,7 @@ impl Cerebro {
         }
     }
 
-    #[tool(description = "Fetch a list of Marvel Champions card data")]
-    pub async fn get_cards(
-        &self,
-        #[tool(aggr)] request: cards::Request,
-    ) -> Result<CallToolResult, rmcp::Error> {
+    pub async fn get_cards(&self, request: cards::Request) -> Result<String, rmcp::Error> {
         let mut url = self.base_url.clone();
         url.set_path("cards");
 
@@ -72,14 +64,10 @@ impl Cerebro {
             ErrorData::internal_error(format!("Failed to read response body: {}", e), None)
         })?;
 
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Ok(text)
     }
 
-    #[tool(description = "Fetch a list of Marvel Champions pack data")]
-    pub async fn get_packs(
-        &self,
-        #[tool(aggr)] params: packs::Request,
-    ) -> Result<CallToolResult, rmcp::Error> {
+    pub async fn get_packs(&self, params: packs::Request) -> Result<String, rmcp::Error> {
         let mut url = self.base_url.clone();
         url.set_path("packs");
 
@@ -100,14 +88,10 @@ impl Cerebro {
             ErrorData::internal_error(format!("Failed to read response body: {}", e), None)
         })?;
 
-        Ok(CallToolResult::success(vec![Content::text(text)]))
+        Ok(text)
     }
 
-    #[tool(description = "Fetch a list of Marvel Champions set data")]
-    pub async fn get_sets(
-        &self,
-        #[tool(aggr)] params: sets::Request,
-    ) -> Result<CallToolResult, rmcp::Error> {
+    pub async fn get_sets(&self, params: sets::Request) -> Result<String, rmcp::Error> {
         let mut url = self.base_url.clone();
         url.set_path("sets");
 
@@ -128,17 +112,6 @@ impl Cerebro {
             ErrorData::internal_error(format!("Failed to read response body: {}", e), None)
         })?;
 
-        Ok(CallToolResult::success(vec![Content::text(text)]))
-    }
-}
-
-#[tool(tool_box)]
-impl ServerHandler for Cerebro {
-    fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            instructions: Some("Cerebro fixture data".into()),
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            ..Default::default()
-        }
+        Ok(text)
     }
 }

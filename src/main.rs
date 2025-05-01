@@ -2,7 +2,8 @@ use rmcp::ServiceExt;
 use tracing_subscriber::{self, EnvFilter};
 
 mod cerebro;
-use crate::cerebro::Cerebro;
+mod server;
+use crate::server::Server;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -14,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
 
     tracing::info!("Starting Cerebro MCP server...");
 
-    let service = Cerebro::new()
+    let service = Server::new()
         .serve(rmcp::transport::stdio())
         .await
         .inspect_err(|e| tracing::error!("server error: {:?}", e))?;
