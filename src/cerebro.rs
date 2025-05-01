@@ -1,8 +1,7 @@
 use reqwest::{Client, Url};
 use rmcp::{
-    ServerHandler,
     model::{CallToolResult, Content, ErrorData, ServerCapabilities, ServerInfo},
-    tool,
+    tool, ServerHandler,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -33,7 +32,7 @@ impl fmt::Display for Origin {
 #[schemars(description = "Parameters for filtering cards from the Cerebro API.")]
 pub struct CardsRequest {
     #[schemars(
-        description = "Filter by card origin ('official', 'unofficial', or 'all'). If omitted, the API defaults might apply (often 'ALL')."
+        description = "Filter by card origin ('official', 'unofficial', or 'all'). If omitted, the API defaults to 'all'."
     )]
     pub origin: Option<Origin>,
 
@@ -90,6 +89,16 @@ pub struct CardsRequest {
 }
 
 #[allow(dead_code)]
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[schemars(description = "Parameters for filtering packs from the Cerebro API.")]
+pub struct PacksRequest {
+    #[schemars(
+        description = "Filter by pack origin ('official', 'unofficial', or 'all'). If omitted, the API defaults to 'all'."
+    )]
+    pub origin: Option<Origin>,
+}
+
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct Cerebro {
     client: Client,
@@ -134,9 +143,20 @@ impl Cerebro {
     }
 
     #[tool(description = "Fetch a list of Marvel Champions pack data")]
-    pub async fn get_packs(&self) -> Result<CallToolResult, rmcp::Error> {
+    pub async fn get_packs(
+        &self,
+        #[tool(aggr)] params: PacksRequest,
+    ) -> Result<CallToolResult, rmcp::Error> {
         let mut url = self.base_url.clone();
         url.set_path("packs");
+
+        let query = serde_urlencoded::to_string(params).map_err(|e| {
+            ErrorData::internal_error(format!("Failed to serialize request: {}", e), None)
+        })?;
+
+        url.set_query(Some(&query));
+
+        tracing::info!("URL: {url}");
 
         let response =
             self.client.get(url).send().await.map_err(|e| {
