@@ -11,4 +11,10 @@ pub struct Request {
         description = "Filter by origin ('official', 'unofficial', or 'all'). If omitted, the API defaults to 'all'."
     )]
     pub origin: Option<Origin>,
+    #[schemars(description = "Filter by set ID.")]
+    pub id: Option<String>,
+    #[schemars(description = "Filter by set name.")]
+    pub name: Option<String>,
+    #[schemars(description = "Filter by set type.")]
+    pub r#type: Option<String>,
 }
