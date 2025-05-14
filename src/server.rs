@@ -1,9 +1,16 @@
 use rmcp::{
-    model::{CallToolResult, Content, ServerCapabilities, ServerInfo},
-    tool, ServerHandler,
+    ServerHandler,
+    model::{CallToolResult, Content, ErrorData, ServerCapabilities, ServerInfo},
+    tool,
 };
 
-use crate::cerebro::{self, Cerebro};
+use crate::cerebro::{self, Cerebro, CerebroError};
+
+impl From<CerebroError> for rmcp::Error {
+    fn from(e: CerebroError) -> Self {
+        ErrorData::internal_error(e.to_string(), None)
+    }
+}
 
 #[derive(Clone)]
 pub(crate) struct Server {
