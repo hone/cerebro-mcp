@@ -11,4 +11,10 @@ pub struct Request {
         description = "Filter by pack origin ('official', 'unofficial', or 'all'). If omitted, the API defaults to 'all'."
     )]
     pub origin: Option<Origin>,
+    #[schemars(description = "Filter incomplete cards.")]
+    pub incomplete: Option<bool>,
+    #[schemars(description = "Filter by pack ID.")]
+    pub id: Option<String>,
+    #[schemars(description = "Filter by pack name.")]
+    pub name: Option<String>,
 }
